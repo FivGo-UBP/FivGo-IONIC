@@ -1,0 +1,208 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="detail-toolbar">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()" fill="clear">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Detail Aktivitas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" >
+  <!-- Loading & Error -->
+  <div class="center-content" *ngIf="isLoading">
+    <ion-spinner></ion-spinner>
+  </div>
+  <div class="center-content" *ngIf="!isLoading && hasError">
+    <p>Gagal memuat detail</p>
+  </div>
+
+  <div class="main-wrapper" *ngIf="!isLoading && detail">
+    
+    <!-- First Card: Invoice & Route -->
+    <div class="detail-card">
+      <div class="invoice-header">
+        <div class="invoice-text">
+          <span class="label-muted">INVOICE NUMBER</span>
+          <p class="invoice-num">INV/2023/10/FGO-001</p>
+        </div>
+        <div class="status-badge" [ngClass]="detail.status === 'completed' ? 'badge-selesai' : 'badge-dibatalkan'">
+          {{ detail.status === 'completed' ? 'Selesai' : 'Dibatalkan' }}
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-title">Jarak</span>
+          <div class="stat-value">
+            <ion-icon src="../../../assets/icon/route-path.svg" name="git-pull-request-outline" class="stat-icon blue-icon"></ion-icon>
+            <p>8.4 KM</p>
+          </div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-title">Durasi</span>
+          <div class="stat-value">
+            <ion-icon name="time-outline" class="stat-icon blue-icon"></ion-icon>
+            <p>24 Menit</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="route-section">
+        <div class="route-item">
+          <div class="route-icon-wrapper">
+            <div class="hollow-circle"></div>
+            <div class="vertical-line"></div>
+          </div>
+          <div class="route-content">
+            <span class="route-label">Awal</span>
+            <p class="route-address">{{ detail.pickup_address }}</p>
+          </div>
+        </div>
+        <div class="route-item">
+          <div class="route-icon-wrapper">
+            <ion-icon name="location" class="solid-pin"></ion-icon>
+          </div>
+          <div class="route-content">
+            <span class="route-label">Tujuan</span>
+            <p class="route-address">{{ detail.dropoff_address }}</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="timestamp-text">{{ formatDateTime(detail.created_at) }}</p>
+    </div>
+
+    <!-- Second Card: Rincian Pendapatan -->
+    <div class="detail-card">
+      <div class="card-title-row">
+        <ion-icon name="wallet" class="wallet-icon"></ion-icon>
+        <span class="card-title-text">Rincian pendapatan</span>
+      </div>
+
+      <div class="income-row">
+        <span class="income-label">Dana (Non-Tunai)</span>
+        <span class="income-val-bold">{{ formatPrice(detail.final_price) }}</span>
+      </div>
+      <div class="income-row">
+        <span class="income-label">Potongan Komisi (10%)</span>
+        <span class="income-val-red">-{{ formatPrice(getCommission()) }}</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="income-row total-row">
+        <span class="total-label">PENDAPATAN</span>
+        <span class="total-val">{{ formatPrice(getIncome()) }}</span>
+      </div>
+    </div>
+
+    <!-- Third Card: Pelanggan & Review -->
+    <div class="detail-card">
+      <div class="customer-row">
+        <div class="customer-info">
+          <img [src]="detail.customer?.photo || 'https://i.pravatar.cc/150?u=customer'" class="avatar-img" />
+          <div class="customer-text">
+            <span class="label-muted">Pelanggan</span>
+            <p class="customer-name">{{ detail.customer?.name || 'Riski Ahmad Fauzan' }}</p>
+          </div>
+        </div>
+        <div class="rating-box" *ngIf="detail.rating">
+          <span class="rating-number">{{ detail.rating | number:'1.1-1' }}</span>
+          <ion-icon name="star" class="star-icon-gold"></ion-icon>
+        </div>
+      </div>
+
+      <div class="review-box" *ngIf="detail.rating">
+        <div class="stars-row">
+          <ion-icon name="star" class="star-icon-gold" *ngFor="let i of [1,2,3,4,5]" [ngStyle]="{'opacity': i <= detail.rating ? 1 : 0.3}"></ion-icon>
+        </div>
+        <p class="review-text">
+          "{{ detail.review || 'Driver sangat sopan, motor nya sangat bersih. Perjalanan terasa sangat aman meskipun sedang jam sibuk. Terima kasih!' }}"
+        </p>
+      </div>
+    </div>
+
+    <!-- Report Button -->
+    <button class="btn-report" (click)="openReportModal()" *ngIf="detail.customer && detail.status === 'completed'">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      Laporkan Customer
+    </button>
+    <p class="report-info" *ngIf="detail.customer && detail.status === 'completed'">
+      Pelaporan hanya tersedia maksimal 3 hari setelah perjalanan selesai.
+    </p>
+
+  </div>
+
+  <!-- ── Laporkan Customer Modal ── -->
+  <ion-modal [isOpen]="isReportModalOpen" (didDismiss)="closeReportModal()">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar style="--background: #ffffff; --color: #0f172a; min-height: 56px;">
+          <ion-buttons slot="start">
+            <ion-button (click)="closeReportModal()" style="--color: #ffffff;">
+              <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title style="font-weight: 700; font-size: 16px;">Laporkan Customer</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content style="--background: #f8fafc;">
+        <div style="padding: 20px;">
+          <h2 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 16px;">Laporkan Masalah Customer</h2>
+          
+          <div style="background: #ffffff; border-radius: 12px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03); border: 1px solid #f1f5f9;">
+            <div style="display: flex; align-items: center; gap: 12px;" *ngIf="detail && detail.customer">
+              <img [src]="detail?.customer?.photo || 'https://i.pravatar.cc/150?u=customer'" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;" onerror="this.src='https://i.pravatar.cc/150?u=customer'">
+              <div>
+                <p style="font-weight: 700; color: #1e293b; margin: 0; font-size: 14px;">{{ detail?.customer?.name }}</p>
+                <p style="font-size: 12px; color: #64748b; margin: 2px 0 0;">{{ detail?.customer?.phone || '-' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Group: Alasan -->
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 8px;">Pilih Alasan Laporan</label>
+            <div style="position: relative; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center;">
+              <select [(ngModel)]="reportForm.reason" style="width: 100%; border: 0; background: transparent; outline: none; font-size: 14px; color: #1e293b;">
+                <option value="" disabled selected hidden>Pilih jenis alasan</option>
+                <option value="Customer tidak sopan atau berkata kasar">Customer tidak sopan atau berkata kasar</option>
+                <option value="Customer bertindak membahayakan / merusak barang">Customer bertindak membahayakan / merusak barang</option>
+                <option value="Customer menolak membayar / membayar kurang">Customer menolak membayar / membayar kurang</option>
+                <option value="Customer meminta melanggar lalu lintas / membahayakan">Customer meminta melanggar lalu lintas / membahayakan</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Form Group: Deskripsi -->
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 8px;">Ceritakan Kejadian</label>
+            <textarea
+              [(ngModel)]="reportForm.description"
+              placeholder="Deskripsikan secara lengkap kejadian yang Anda alami..."
+              style="width: 100%; height: 150px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; font-size: 14px; color: #1e293b; outline: none; resize: none; border-color: #e2e8f0;"
+              maxlength="1000">
+            </textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <ion-button
+            [disabled]="!isReportFormValid() || isSubmittingReport"
+            expand="block"
+            shape="round"
+            style="--background: #ea580c; --color: #ffffff; font-weight: 700; height: 48px; margin-top: 24px;"
+            (click)="submitReport()">
+            <ion-spinner name="crescent" *ngIf="isSubmittingReport" style="margin-right: 8px;"></ion-spinner>
+            Kirim Laporan
+          </ion-button>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

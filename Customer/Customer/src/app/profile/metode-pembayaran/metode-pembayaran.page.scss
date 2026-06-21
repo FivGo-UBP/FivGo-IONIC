@@ -1,0 +1,349 @@
+ion-toolbar.bg-orange {
+  --background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  --color: #ffffff;
+}
+
+.text-white {
+  --color: #ffffff;
+  font-weight: 600;
+}
+
+ion-content.bg-grey {
+  --background: #EAECEE;
+}
+
+// ── Info Banner ──────────────────────────────────────────────────────
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #d6dff5;
+  margin: 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1c2f72;
+  font-weight: 500;
+
+  .info-icon {
+    font-size: 22px;
+    color: #27448A;
+    flex-shrink: 0;
+  }
+}
+
+// ── Section ──────────────────────────────────────────────────────────
+.section {
+  margin: 0 16px 16px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.section-subtitle {
+  font-size: 12px;
+  color: #888;
+  margin: 0 0 12px 0;
+}
+
+// ── Payment List ─────────────────────────────────────────────────────
+.payment-list {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 8px 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.payment-item {
+  --background: white;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 0;
+  min-height: 64px;
+
+  &.selected {
+    --background: white;
+  }
+}
+
+.item-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 0 16px;
+}
+
+.payment-icon-box {
+  width: 40px;
+  height: 40px;
+  background: #dce4f7;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+
+  &--blue {
+    background: #27448A;
+  }
+}
+
+.payment-icon {
+  font-size: 22px;
+  color: #27448A;
+
+  &--white {
+    color: #ffffff;
+  }
+}
+
+.payment-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+// ── Radio Button ────────────────────────────────────────────────────
+.radio-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+
+  &.radio-active {
+    border-color: #27448A;
+    background: #27448A;
+  }
+}
+
+.radio-inner {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+}
+
+// ── Expand Icon ──────────────────────────────────────────────────────
+.expand-icon {
+  font-size: 16px;
+  color: #888;
+  margin-left: 4px;
+  transition: transform 0.25s ease;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+// ── Non Tunai Sub Options ────────────────────────────────────────────
+.nontunai-options {
+  background: #f8f8f8;
+  border-top: 1px solid #f0f0f0;
+
+  .sub-item {
+    --background: #f8f8f8;
+    --padding-start: 24px;
+    --min-height: 48px;
+    font-size: 14px;
+    color: #333;
+
+    ion-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+}
+
+.sub-check {
+  font-size: 18px;
+  color: #27448A;
+  margin-right: 8px;
+
+  &--empty {
+    color: #ccc;
+  }
+}
+
+.nontunai-dropdown {
+  background: #ffffff;
+  padding: 0 16px 14px 68px;
+}
+
+.select-item {
+  --background: #f8fafc;
+  --border-radius: 12px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --inner-padding-end: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  min-height: 52px;
+
+  ion-label {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .channel-trigger {
+    border: 0;
+    background: transparent;
+    color: #111827;
+    font-size: 14px;
+    font-weight: 800;
+    max-width: 170px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    text-align: right;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    ion-icon {
+      flex-shrink: 0;
+      color: #111827;
+      font-size: 16px;
+    }
+  }
+}
+
+.select-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #e8eefc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+
+  ion-icon {
+    color: #27448A;
+    font-size: 18px;
+  }
+}
+
+.minimum-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 600;
+
+  ion-icon {
+    flex-shrink: 0;
+    color: #f59e0b;
+    font-size: 17px;
+    margin-top: 1px;
+  }
+}
+
+// ── Footer Button Container ──────────────────────────────────────────
+ion-footer.bg-grey {
+  --background: #EAECEE;
+}
+
+.footer-btn-container {
+  padding: 16px;
+  background: #EAECEE;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.btn-confirm-selection {
+  --border-radius: 25px;
+  margin: 0;
+  font-weight: 700;
+  font-size: 16px;
+  height: 52px;
+  text-transform: none;
+  --box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+// ── Wallet Payment Styles ───────────────────────────────────────────
+.payment-icon-box--orange {
+  background: linear-gradient(135deg, #FF9800 0%, #FF5722 100%) !important;
+}
+
+.wallet-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.wallet-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wallet-warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff7ed;
+  margin: 8px 16px 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #ffedd5;
+
+  .warn-icon {
+    font-size: 20px;
+    color: #ea580c;
+    flex-shrink: 0;
+  }
+
+  .warn-text {
+    font-size: 12px;
+    color: #9a3412;
+    font-weight: 600;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .btn-topup-inline {
+    border: 0;
+    background: #ea580c;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2);
+    transition: background 0.2s;
+
+    &:hover, &:active {
+      background: #c2410c;
+    }
+  }
+}

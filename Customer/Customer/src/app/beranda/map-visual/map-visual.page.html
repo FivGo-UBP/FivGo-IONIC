@@ -1,0 +1,570 @@
+<!-- Map Container di luar ion-content agar tidak terpengaruh scroll/shadow DOM Ionic -->
+<div class="map-container" #map></div>
+
+<ion-content [fullscreen]="true" [scrollY]="false" class="transparent-content">
+  <!-- Top Floating Header (Pre-Order) -->
+  <div class="floating-header" *ngIf="!isDriverFound">
+    <div class="back-btn" (click)="goBack()">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </div>
+    <div class="dest-badge">
+      <div class="dot-icon"></div>
+      <span class="dest-text">{{ tujuan || 'Tujuan' }}</span>
+    </div>
+  </div>
+
+  <!-- OVERLAYS UNTUK TRACKING DRIVER -->
+  <ng-container *ngIf="isDriverFound">
+    
+    <!-- Phase 1: Initial Success Banner (Green) -->
+    <div class="tracking-top-banner success" *ngIf="showInitialSuccessBanner">
+      <div class="back-btn" (click)="goBack()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </div>
+      <div class="success-banner-content">
+        <ion-icon name="checkmark-circle"></ion-icon>
+        <span>Driver di Temukan</span>
+      </div>
+    </div>
+
+    <!-- Phase 2 & 4: Route Input Cards (Menuju Penjemputan / Dalam Perjalanan) -->
+    <div class="tracking-top-card route-card" *ngIf="!showInitialSuccessBanner && (!isDriverArrived || isInJourney)">
+      <div class="back-btn top-left" (click)="goBack()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </div>
+      <div class="route-inputs">
+        <div class="input-row">
+          <div class="hollow-circle-blue"></div>
+          <div class="input-box">{{ isInJourney ? (jemput || 'Lokasi Jemput') : (getDriverName() + ' menuju titik jemput') }}</div>
+        </div>
+        <div class="route-line-dashed"></div>
+        <div class="input-row">
+          <div class="hollow-circle-orange"></div>
+          <div class="input-box">{{ isInJourney ? (tujuan || 'Tujuan') : (jemput || 'Lokasi Jemput') }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 3: Arrived Card (White Bell) -->
+    <div class="tracking-top-card arrived-card" *ngIf="!showInitialSuccessBanner && isDriverArrived && !isInJourney">
+      <div class="back-btn top-left" (click)="goBack()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </div>
+      <div class="arrived-content">
+        <div class="bell-icon-wrapper">
+          <ion-icon name="notifications"></ion-icon>
+        </div>
+        <div class="arrived-text">
+          <h3>Driver telah sampai di lokasi jemput</h3>
+          <p>{{ getDriverName() }} ({{ getDriverPlate() }}) sudah menunggumu. Jangan lupa pastikan helm dan barang bawaanmu, ya!</p>
+        </div>
+      </div>
+    </div>
+
+
+
+  </ng-container>
+</ion-content>
+
+<!-- ============================================================ -->
+<!-- CUSTOM VEHICLE BOTTOM SHEET (bukan ion-modal)               -->
+<!-- ============================================================ -->
+
+<!-- Backdrop -->
+<div class="sheet-backdrop" 
+     *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound" 
+     [style.opacity]="backdropOpacity"></div>
+
+<div class="vehicle-sheet-wrap" 
+     *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound" 
+     [class.dragging]="isDragging"
+     [style.transform]="'translateY(' + currentY + '%)'">
+
+  <!-- Floating GPS Recenter Button -->
+  <div class="recenter-gps-btn inside-sheet" (click)="recenterMapOnUser(); $event.stopPropagation();" *ngIf="isMapPanned && lastUserLngLat">
+    <ion-icon name="locate-outline"></ion-icon>
+  </div>
+
+  <!-- Header/Handle -->
+  <div class="sheet-header" 
+       (touchstart)="handleStart($event)" (mousedown)="handleStart($event)">
+    <div class="modal-handle"></div>
+  </div>
+
+  <!-- Scrollable list area -->
+  <div class="vehicle-sheet-body custom-scrollbar" 
+       [style.overflow-y]="contentOverflowY"
+       #sheetContent
+       (touchstart)="handleContentStart($event)" (mousedown)="handleContentStart($event)">
+    <div class="vehicle-list">
+      <div class="vehicle-item" *ngFor="let v of vehicles" [class.selected]="v.type === selectedVehicle" (click)="selectVehicle(v.type)">
+        <div class="v-img-container">
+          <img [src]="v.image" [alt]="v.name">
+        </div>
+        <div class="v-details">
+          <h3>{{ v.name }}</h3>
+          <p>
+            <ng-container *ngIf="v.isLoading">Menghitung...</ng-container>
+            <ng-container *ngIf="!v.isLoading">{{ v.time }}</ng-container>
+            <span class="dot-separator">&bull;</span>
+            <ion-icon name="person"></ion-icon> {{ v.capacity }}
+          </p>
+          <div class="v-note" *ngIf="v.type === 'mobil'">
+            <span class="note-badge">4 Kursi</span>
+          </div>
+        </div>
+        <div class="v-price-container" style="display: flex; flex-direction: column; align-items: flex-end;">
+          <ion-spinner name="circles" *ngIf="v.isLoading" class="v-spinner"></ion-spinner>
+          <ng-container *ngIf="!v.isLoading">
+            <span class="original-price-crossed" *ngIf="selectedPromo && getDiscountedPriceRaw(v.type, getPriceRaw(v.price)) !== getPriceRaw(v.price)" style="text-decoration: line-through; color: #94a3b8; font-size: 12px; margin-bottom: 2px;">
+              {{ v.price }}
+            </span>
+            <h4 style="margin: 0; color: #1e293b; font-weight: 700;">
+              Rp{{ getDiscountedPriceRaw(v.type, getPriceRaw(v.price)) | number:'1.0-0':'id-ID' }}
+            </h4>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+    <!-- Warning Banner for Short Distance on Mobil -->
+    <div class="short-distance-warning" *ngIf="isShortDistanceForMobil()">
+      <div class="warning-header">
+        <ion-icon name="warning-outline" class="warning-icon"></ion-icon>
+        <h4>Jarak Sangat Dekat</h4>
+      </div>
+      <p>Pastikan lokasi jemput/tujuan dapat diakses Mobil (bukan gang sempit) agar penjemputan lancar.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- Sticky footer: payment pill + order button (Outside Modal, Fixed) -->
+<div class="fixed-order-footer" *ngIf="isVehicleModalOpen && !isSearchingDriver && !isDriverFound">
+  <div class="options-pill">
+    <div class="pill-btn payment-btn" (click)="goToMetodePembayaran()">
+      <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : (selectedPayment === 'wallet' ? 'wallet-outline' : 'card-outline')"></ion-icon>
+      <span>{{ getSelectedPaymentLabel() }}</span>
+    </div>
+    <div class="pill-divider"></div>
+    <div class="pill-btn promo-btn" (click)="openPromoModal()" [class.has-promo]="selectedPromo">
+      <ion-icon name="pricetag-outline" [color]="selectedPromo ? 'warning' : 'medium'"></ion-icon>
+      <span style="margin-left: 4px;">{{ selectedPromo ? selectedPromo.code : 'Promo' }}</span>
+    </div>
+    <div class="pill-divider"></div>
+    <div class="pill-btn more-btn" (click)="openNoteModal()">
+      <ion-icon name="ellipsis-horizontal" [color]="driverNote ? 'warning' : 'medium'"></ion-icon>
+    </div>
+  </div>
+  <ion-button expand="block" color="warning" class="btn-order-main" (click)="startSearch()">
+    Pesan Sekarang
+  </ion-button>
+</div>
+
+<!-- Modal 2: Catatan Pengemudi -->
+<div class="custom-backdrop-solid" *ngIf="isNoteModalOpen" (click)="closeNoteModal()"></div>
+<div class="custom-bottom-sheet-wrap note-modal-wrap" 
+     *ngIf="isNoteModalOpen"
+     [class.dragging]="isDraggingNote"
+     [style.transform]="'translateY(' + noteY + '%)'">
+  <!-- Visual handle to make it match sheet design and allow drag/tap to close -->
+  <div class="sheet-header" 
+       (touchstart)="handleNoteStart($event)" (mousedown)="handleNoteStart($event)">
+    <div class="modal-handle"></div>
+  </div>
+
+  <div class="note-modal-header">
+    <h3 class="note-title">Catatan Untuk Pengemudi</h3>
+  </div>
+  
+  <div class="note-input-container">
+    <textarea 
+      placeholder="Masukkan catatan disini..."
+      [(ngModel)]="driverNote"
+      maxlength="150"
+      (input)="updateCharCount($event)">
+    </textarea>
+    <div class="char-count">{{ driverNote.length }}/150 Karakter</div>
+  </div>
+  
+  <div class="note-modal-footer">
+    <ion-button expand="block" color="warning" class="save-note-btn" (click)="saveNote()">
+      Simpan
+    </ion-button>
+  </div>
+</div>
+
+<!-- Modal 3: DompetX Gateway -->
+<div class="custom-backdrop-solid" *ngIf="isPaymentGatewayOpen"></div>
+<div class="custom-bottom-sheet-wrap payment-gateway-wrap" *ngIf="isPaymentGatewayOpen">
+  <div class="payment-gateway-container">
+    <div class="gateway-header">
+      <div>
+        <span class="gateway-eyebrow">DompetX</span>
+        <h2>Payment Gateway</h2>
+      </div>
+      <span class="gateway-status" [class.is-error]="paymentError">
+        {{ paymentError ? 'Gagal' : (isCreatingPayment ? 'Membuat' : getPaymentStatusLabel()) }}
+      </span>
+    </div>
+
+    <p class="gateway-subtitle">Selesaikan pembayaran {{ getDompetxGatewayMethodLabel() }} langsung di aplikasi. Channel bisa diubah dari halaman Metode Pembayaran.</p>
+
+    <div class="dompetx-loading" *ngIf="isCreatingPayment">
+      <ion-spinner name="crescent"></ion-spinner>
+      <span>Menyiapkan pembayaran {{ getDompetxGatewayMethodLabel() }}...</span>
+    </div>
+
+    <div class="dompetx-error" *ngIf="paymentError && !isCreatingPayment">
+      <span>{{ paymentError }}</span>
+      <ion-button
+        *ngIf="canSwitchDompetxToQris()"
+        size="small"
+        fill="outline"
+        color="warning"
+        (click)="switchDompetxToQris()">
+        Pakai QRIS
+      </ion-button>
+    </div>
+
+    <ng-container *ngIf="paymentInfo && !isCreatingPayment">
+      <img *ngIf="getPaymentQrImage()" [src]="getPaymentQrImage()" alt="QRIS DompetX" class="dompetx-qr" />
+
+      <div class="dompetx-download-container" *ngIf="getPaymentQrImage()">
+        <ion-button size="small" fill="outline" color="warning" class="btn-download-qr" (click)="downloadQrCode()">
+          <ion-icon slot="start" name="download-outline"></ion-icon>
+          Simpan QR ke Galeri
+        </ion-button>
+      </div>
+
+      <div class="dompetx-code" *ngIf="getPaymentVaBankName()">
+        <span>Bank</span>
+        <strong>{{ getPaymentVaBankName() }}</strong>
+      </div>
+
+      <div class="dompetx-code" *ngIf="getPaymentVaNumber()">
+        <span>Nomor VA</span>
+        <strong>{{ getPaymentVaNumber() }}</strong>
+      </div>
+
+      <div class="dompetx-ref" *ngIf="getPaymentReference()">
+        <span>Ref</span>
+        <strong>{{ getPaymentReference() }}</strong>
+      </div>
+    </ng-container>
+
+    <ion-button expand="block" color="warning" class="btn-confirm-payment" [disabled]="isCreatingPayment || !paymentInfo" (click)="checkPaymentAndContinue()">
+      Saya Sudah Bayar
+    </ion-button>
+
+    <ion-button expand="block" fill="clear" color="medium" class="btn-cancel-payment" (click)="cancelOrder()">
+      Batalkan
+    </ion-button>
+  </div>
+</div>
+
+<!-- Modal 4: Mencari Driver -->
+<div class="custom-backdrop-solid" *ngIf="isSearchingDriver"></div>
+<div class="custom-bottom-sheet-wrap searching-wrap" *ngIf="isSearchingDriver">
+  <div class="searching-container">
+    <h2 class="searching-title">
+      {{ (activeOrder && activeOrder.driver) ? 'Driver Ditemukan!' : 'Mencari Driver....' }}
+    </h2>
+    <p class="searching-subtitle">
+      {{ (activeOrder && activeOrder.driver) 
+          ? 'Menunggu konfirmasi perjalanan dari driver ' + activeOrder.driver.name + '...' 
+          : 'Mohon tunggu sebentar, kami sedang mencarikan driver terdekat untukmu' }}
+    </p>
+
+    <!-- Radar Animation Container -->
+    <div class="radar-container">
+      <div class="radar-ring delay-1"></div>
+      <div class="radar-ring delay-2"></div>
+      <div class="radar-ring delay-3"></div>
+      <div class="radar-icon-wrap">
+        <img [src]="'assets/' + selectedVehicle + '.png'" class="radar-vehicle-img" [alt]="selectedVehicle">
+      </div>
+    </div>
+
+    <div class="search-vehicle-card">
+      <div class="search-vehicle-info">
+        <img [src]="'assets/' + selectedVehicle + '.png'" class="search-vehicle-img" [alt]="selectedVehicle">
+        <div class="search-vehicle-text">
+          <span class="search-vehicle-name">{{ selectedVehicle === 'motor' ? 'Motor' : 'Mobil' }}</span>
+          <div class="search-payment-badge">
+            <ion-icon [name]="selectedPayment === 'tunai' ? 'cash-outline' : (selectedPayment === 'wallet' ? 'wallet-outline' : 'card-outline')" class="search-payment-icon"></ion-icon>
+            <span>{{ getSelectedPaymentLabel() }}</span>
+          </div>
+        </div>
+      </div>
+      <span class="search-vehicle-price">
+        {{ getSelectedVehiclePrice() }}
+      </span>
+    </div>
+
+    <!-- Button to manually cancel search -->
+    <ion-button expand="block" fill="outline" color="danger" class="cancel-search-btn" (click)="cancelSearch()">
+      Batalkan Pencarian
+    </ion-button>
+  </div>
+</div>
+
+<!-- Modal 5: Driver Tidak Ditemukan -->
+<div class="custom-backdrop-solid" *ngIf="isDriverNotFound"></div>
+<div class="custom-bottom-sheet-wrap notfound-wrap" *ngIf="isDriverNotFound">
+  <div class="notfound-container">
+    <img src="assets/driver-not-found.png" class="notfound-img" alt="Driver tidak ditemukan">
+    <h2 class="notfound-title">Waduh, Driver belum Ketemu</h2>
+    <p class="notfound-subtitle">Area ini sedang sangat sibuk. Jangan menyerah, coba sekali lagi ya!</p>
+
+    <ion-button expand="block" color="warning" class="retry-btn" (click)="retrySearch()">
+      Coba Lagi
+    </ion-button>
+
+    <div class="notfound-back-wrapper">
+      <ion-button expand="block" fill="outline" color="danger" class="back-btn-notfound" (click)="cancelOrder()">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Batal
+      </ion-button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 5: Driver Ditemukan (Bottom Sheet Konsisten) -->
+<div class="custom-bottom-sheet-wrap driver-found-wrap" *ngIf="isDriverFound && activeOrder">
+  <!-- Floating GPS Recenter Button -->
+  <div class="recenter-gps-btn inside-sheet" (click)="recenterMapOnUser(); $event.stopPropagation();" *ngIf="isMapPanned && lastUserLngLat">
+    <ion-icon name="locate-outline"></ion-icon>
+  </div>
+  <div class="driver-found-container">
+    <!-- Status Header -->
+    <div class="status-header">
+      <div class="status-left">
+        <h2 class="status-title">{{ isInJourney ? 'Dalam perjalanan ke tujuan' : 'Driver menuju titik jemput' }}</h2>
+        <p class="status-location">{{ isInJourney ? (tujuan || 'Tujuan') : (jemput || 'Lokasi jemput') }}</p>
+      </div>
+      <div class="status-right">
+        <span class="eta-text">{{ driverEtaText || '3 mnt' }}</span>
+      </div>
+    </div>
+
+    <!-- Driver Card -->
+    <div class="driver-card">
+      <div class="driver-card-top">
+        <div class="driver-images">
+          <img [src]="getDriverPhoto()" alt="Driver" class="driver-photo" />
+        </div>
+        <div class="vehicle-details">
+          <h2 class="plate-number">{{ getDriverPlate() }}</h2>
+          <p class="vehicle-brand">{{ getDriverVehicleBrand() | titlecase }}</p>
+        </div>
+      </div>
+      
+      <div class="driver-card-middle">
+        <div class="name-rating-group">
+          <div class="name-rating-row">
+            <span class="driver-name-rating">{{ getDriverName() }} &bull; {{ getDriverRating() }}</span>
+            <ion-icon name="star" class="star-gold"></ion-icon>
+          </div>
+          <span class="driver-vehicle-type">{{ getDriverVehicle() | titlecase }}</span>
+        </div>
+      </div>
+
+      <div class="driver-card-bottom">
+        <div class="chat-input-box" (click)="goToChat()">
+          <ion-icon name="chatbubble-ellipses-outline" class="chat-icon"></ion-icon>
+          <span class="chat-placeholder">Pesan baru untukmu</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cancel Button -->
+    <ion-button *ngIf="activeOrder?.status !== 'started'" expand="block" fill="outline" color="danger" class="cancel-btn-visible" (click)="openCancelReasonModal()">
+      Batalkan Pesanan
+    </ion-button>
+  </div>
+</div>
+
+<!-- Modal 6: Alasan Batal -->
+<div class="custom-backdrop-solid" *ngIf="isCancelReasonModalOpen"></div>
+<div class="custom-bottom-sheet-wrap cancel-reason-wrap" *ngIf="isCancelReasonModalOpen">
+  <div class="cancel-header-row">
+    <img src="assets/confirm cancel.png" alt="Confirm Cancel" class="confirm-cancel-img">
+    <div class="cancel-header-text">
+      <h3>Yakin mau batal?</h3>
+      <p>Terlalu sering membatalkan pesanan bisa bikin kamu lebih sulit dapet driver di orderan berikutnya, lho</p>
+    </div>
+  </div>
+
+  <div class="cancel-warning-box">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <div class="warning-text-container">
+      <p>
+        {{ isDriverCloseForPenalty ? 'Driver sudah dekat dengan lokasi jemputmu, nih. Membatalkan pesanan sekarang akan dikenakan biaya kompensasi' : 'Driver masih jauh dengan lokasi jemputmu, nih. Membatalkan pesanan sekarang tidak akan dikenakan biaya kompensasi' }}
+      </p>
+      <p class="limit-text">(BATAS HARIAN: 2/3)</p>
+    </div>
+  </div>
+
+  <h4 class="cancel-reason-title">Kenapa Pesanan nya di batalin?</h4>
+  <ion-list lines="full" class="cancel-reason-list">
+    <ion-item *ngFor="let reason of cancelReasons" button (click)="selectCancelReason(reason)">
+      <ion-label>{{ reason }}</ion-label>
+      <ion-icon *ngIf="selectedCancelReason === reason" name="checkmark-circle" color="success" slot="end"></ion-icon>
+      <div *ngIf="selectedCancelReason !== reason" slot="end" class="circle-placeholder"></div>
+    </ion-item>
+  </ion-list>
+
+  <div class="cancel-actions-row">
+    <ion-button expand="block" color="light" class="cancel-btn-light" (click)="closeCancelReasonModal()">
+      Tunggu Driver
+    </ion-button>
+    <ion-button expand="block" color="warning" class="cancel-btn-confirm" [disabled]="!selectedCancelReason" (click)="confirmCancelOrder()">
+      Batalkan Pesanan
+    </ion-button>
+  </div>
+</div>
+
+<!-- Full Screen Modal: Sukses Batal -->
+<div class="cancel-success-overlay" *ngIf="isCancelSuccessOpen">
+  <div class="cancel-success-content">
+    <div class="cancel-success-header">
+      <div class="cancel-success-icon-wrap">
+        <ion-icon name="checkmark"></ion-icon>
+      </div>
+      <h2>Pesanan Berhasil di batalkan</h2>
+      <p>Jangan khawatir, kami sudah memberitahu Driver agar tidak melanjutkan penjemputan.</p>
+    </div>
+
+    <img src="assets/cancel ilustration.png" alt="Cancel Illustration" class="cancel-success-img">
+
+    <div class="cancel-receipt-card">
+      <h4>Rincian Biaya</h4>
+      
+      <div class="receipt-row">
+        <span>Biaya Perjalanan</span>
+        <span>Rp0</span>
+      </div>
+      
+      <div class="receipt-row border-bottom">
+        <span>Biaya Pembatalan</span>
+        <span>{{ cancelFee > 0 ? 'Rp2.500' : 'Rp0' }}</span>
+      </div>
+      
+      <div class="receipt-row total">
+        <span>Total</span>
+        <span>{{ cancelFee > 0 ? 'Rp 2.500' : 'Rp0' }}</span>
+      </div>
+
+      <div class="receipt-warning-box">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <p>
+          Biaya pembatalan diberikan sepenuhnya kepada driver sebagai kompensasi waktu/bahan bakar.
+        </p>
+      </div>
+    </div>
+
+    <ion-button expand="block" color="warning" class="btn-back-home" (click)="finishCancelFlow()">
+      Kembali ke Beranda
+    </ion-button>
+  </div>
+</div>
+
+<!-- Modal 6: Promo & Voucher Sheet -->
+<div class="custom-backdrop-solid" *ngIf="isPromoModalOpen" (click)="closePromoModal()"></div>
+<div class="custom-bottom-sheet-wrap promo-modal-wrap" 
+     *ngIf="isPromoModalOpen"
+     [class.dragging]="isDraggingPromo"
+     [style.transform]="'translateY(' + promoY + '%)'">
+  <div class="sheet-header" (touchstart)="handlePromoStart($event)" (mousedown)="handlePromoStart($event)">
+    <div class="modal-handle"></div>
+  </div>
+  
+  <div class="promo-modal-header">
+    <h3 class="promo-title">Pakai Promo</h3>
+  </div>
+  
+
+
+  <!-- Active Voucher list -->
+  <div class="promo-modal-body custom-scrollbar">
+    <div class="promo-voucher-list" *ngIf="availablePromos && availablePromos.length > 0">
+      <div class="promo-voucher-card" *ngFor="let p of availablePromos" (click)="viewPromoDetail(p)">
+        <div class="voucher-left">
+          <div class="voucher-icon-wrap">
+            <ion-icon name="pricetag-outline"></ion-icon>
+          </div>
+        </div>
+        <div class="voucher-middle">
+          <h4>{{ p.title }}</h4>
+          <p class="voucher-desc">{{ p.description }}</p>
+          <p class="voucher-expiry" *ngIf="p.end_date">Hingga {{ p.end_date | date:'dd MMM yyyy' }}</p>
+          
+          <!-- Warning if not eligible -->
+          <div class="warning-badge-inline" *ngIf="getPromoEligibilityError(p)">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            <span>{{ getPromoEligibilityError(p) }}</span>
+          </div>
+        </div>
+        <div class="voucher-right">
+          <button class="btn-voucher-use" [disabled]="getPromoEligibilityError(p)" (click)="selectPromo(p); $event.stopPropagation();">
+            Gunakan
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="promo-empty" *ngIf="!availablePromos || availablePromos.length === 0">
+      <ion-icon name="gift-outline" style="font-size: 42px; color: #cbd5e1; margin-bottom: 8px;"></ion-icon>
+      <p>Belum ada promo yang tersedia.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 7: Detail Promosi (Matching Reference Image) -->
+<div class="custom-backdrop-solid" *ngIf="isPromoDetailOpen" (click)="closePromoDetail()"></div>
+<div class="custom-bottom-sheet-wrap promo-detail-wrap" *ngIf="isPromoDetailOpen">
+  <div class="sheet-header-static">
+    <div class="modal-handle-static"></div>
+  </div>
+  
+  <div class="detail-header-row">
+    <h3>Detail Promosi</h3>
+    <ion-icon name="close-circle" class="btn-close-detail" (click)="closePromoDetail()"></ion-icon>
+  </div>
+
+  <div class="promo-detail-body custom-scrollbar" *ngIf="detailPromo">
+    <!-- Illustrative image on top -->
+    <div class="sheet-banner-img">
+      <img [src]="getPromoImage(detailPromo.code)" alt="Promo illustration">
+    </div>
+
+    <h2 class="detail-title">{{ detailPromo.title }}</h2>
+    <p class="detail-subtitle">{{ detailPromo.description }}</p>
+
+
+
+    <!-- Syarat & Ketentuan -->
+    <h4 class="terms-header">Syarat &amp; Ketentuan</h4>
+    <ul class="terms-list">
+      <li *ngIf="detailPromo.min_order_amount > 0">Berlaku setelah transaksi minimal Rp {{ detailPromo.min_order_amount | number:'1.0-0':'id-ID' }}.</li>
+      <li *ngIf="detailPromo.limit_per_user > 0">Batas pemakaian per akun sebanyak {{ detailPromo.limit_per_user }}x.</li>
+      <li *ngIf="detailPromo.applicable_vehicles">
+        Hanya berlaku untuk layanan FivGO {{ getApplicableVehiclesLabel(detailPromo.applicable_vehicles) }}.
+      </li>
+      <li>Potongan langsung sebesar {{ detailPromo.discount_percent }}% (Maks. Rp {{ detailPromo.max_discount | number:'1.0-0':'id-ID' }}).</li>
+      <li *ngIf="detailPromo.end_date">Berlaku hingga {{ detailPromo.end_date | date:'dd MMMM yyyy' }}.</li>
+    </ul>
+    
+    <!-- Eligibility alert inside details -->
+    <div class="detail-error-box" *ngIf="getPromoEligibilityError(detailPromo)">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <p>{{ getPromoEligibilityError(detailPromo) }}</p>
+    </div>
+  </div>
+  
+  <div class="promo-detail-footer" *ngIf="detailPromo">
+    <ion-button expand="block" color="warning" class="btn-use-promo-main" [disabled]="getPromoEligibilityError(detailPromo)" (click)="selectPromo(detailPromo)">
+      Gunakan Promo
+    </ion-button>
+  </div>
+</div>

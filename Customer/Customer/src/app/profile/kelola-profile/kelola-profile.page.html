@@ -1,0 +1,117 @@
+<ion-content [fullscreen]="true" class="bg-light-grey">
+  <div class="profile-header bg-orange">
+
+    <div class="header-content">
+      <!-- Tombol back di kiri, di atas foto profil -->
+      <div class="custom-back-row">
+        <button class="custom-back-btn" (click)="goBack()">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </button>
+      </div>
+
+      <!-- Avatar di tengah -->
+      <div class="avatar-container">
+        <img [src]="user?.photo || 'assets/Profile-Default.jpeg'" alt="Profile" referrerpolicy="no-referrer" />
+      </div>
+      <h2 class="profile-name">{{ user?.name || '...' }}</h2>
+      <p class="profile-phone">
+        {{ user?.phone || t('profile.phone.empty') }}
+        <ion-icon *ngIf="!user?.phone" name="alert-circle-outline" style="vertical-align: text-bottom; margin-left: 4px; color: #ff0000; font-size: 16px;"></ion-icon>
+      </p>
+      <p class="profile-email">
+        {{ user?.email || t('profile.email.empty') }}
+        <ion-icon *ngIf="!user?.email" name="alert-circle-outline" style="vertical-align: text-bottom; margin-left: 4px; color: #ff0000; font-size: 16px;"></ion-icon>
+      </p>
+      
+      <ion-button class="edit-btn" routerLink="/edit-profile" expand="block">{{ t('profile.edit') }}</ion-button>
+    </div>
+
+    <!-- Wave di dalam profile-header agar warna menyatu -->
+    <div class="wave-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 160" preserveAspectRatio="none">
+        <path fill="#e8ebf0" d="M0,160 L0,120 C400,200 800,20 1100,20 C1250,20 1350,80 1440,100 L1440,160 Z"></path>
+      </svg>
+    </div>
+
+  </div>
+
+
+  <div class="menu-container">
+    <ion-list class="menu-list" lines="none">
+      <ion-item button detail="true" class="menu-item" routerLink="/keamanan">
+        <div class="icon-box" slot="start">
+          <ion-icon name="shield"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.security') }}</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+
+
+      <ion-item button detail="true" class="menu-item" routerLink="/metode-pembayaran">
+        <div class="icon-box" slot="start">
+          <ion-icon name="card"></ion-icon>
+        </div>
+        <ion-label>Metode Pembayaran</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/alamat-tersimpan">
+        <div class="icon-box" slot="start">
+          <ion-icon name="location"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.address') }}</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/promo">
+        <div class="icon-box" slot="start">
+          <ion-icon name="pricetag"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.promo') }}</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/bahasa">
+        <div class="icon-box" slot="start">
+          <ion-icon name="globe"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.language') }}</ion-label>
+        <span class="item-value" slot="end">{{ currentLanguageLabel }}</span>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" class="menu-item" routerLink="/bantuan">
+        <div class="icon-box" slot="start">
+          <ion-icon name="help-circle"></ion-icon>
+        </div>
+        <ion-label>{{ t('menu.help') }}</ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <div class="logout-container">
+    <ion-button class="logout-btn" expand="block" (click)="confirmLogout()">
+      <ion-icon slot="start" name="log-out-outline"></ion-icon>
+      {{ t('menu.logout') }}
+    </ion-button>
+  </div>
+
+  <!-- Custom Logout Modal Overlay -->
+  <div class="logout-modal-overlay" *ngIf="showLogoutConfirm">
+    <div class="logout-modal-backdrop" (click)="showLogoutConfirm = false"></div>
+    <div class="logout-modal-card">
+      <div class="logout-modal-icon-container">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </div>
+      <h2 class="logout-modal-title">{{ t('alert.logout.title') }}</h2>
+      <p class="logout-modal-message">
+        {{ t('alert.logout.msg') }}
+      </p>
+      <div class="logout-modal-actions">
+        <button class="btn-cancel" (click)="showLogoutConfirm = false">{{ t('alert.cancel') }}</button>
+        <button class="btn-confirm" (click)="logout()">{{ t('alert.yes') }}</button>
+      </div>
+    </div>
+  </div>
+</ion-content>
