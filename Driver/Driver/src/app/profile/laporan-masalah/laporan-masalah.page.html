@@ -1,0 +1,74 @@
+<ion-content>
+  <!-- Light Banner -->
+  <div class="report-banner">
+    <div class="banner-header">
+      <button (click)="goBack()" class="back-btn-dark">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+      <h1 class="banner-header-title-dark">Pusat Bantuan</h1>
+    </div>
+
+    <div class="banner-body">
+      <div class="banner-left">
+        <h2 class="banner-title">Laporan Anda</h2>
+        <p class="banner-sub">Berikut adalah daftar dari seluruh pertanyaan/keluhan Anda</p>
+      </div>
+      <div class="banner-circle"></div>
+      <img src="assets/Laporan-masalah-icon.png" alt="icon laporan masalah" class="banner-report-img">
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- Main Reports Card Area -->
+    <div class="reports-container">
+      
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading">
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+        <p>Memperbarui laporan...</p>
+      </div>
+
+      <!-- Reports List State -->
+      <div class="reports-list" *ngIf="!isLoading && laporanHistory.length > 0">
+        <div class="report-card" *ngFor="let item of laporanHistory; let i = index" [class.expanded]="item.isExpanded">
+          <div class="card-header" (click)="toggleExpand(i)">
+            <div class="header-left">
+              <span class="report-tag" [ngClass]="getCategoryTagClass(item.kategori)">
+                {{ getCategoryLabel(item.kategori) }}
+              </span>
+              <span class="report-date">{{ formatDateTime(item.tanggal) }}</span>
+            </div>
+            <ion-icon [name]="item.isExpanded ? 'chevron-up-outline' : 'chevron-down-outline'" class="card-arrow"></ion-icon>
+          </div>
+
+          <div class="card-body">
+            <h4 class="report-title">{{ getReportTitle(item.kategori) }}</h4>
+            <div class="report-description" [innerHTML]="formatDescription(item.deskripsi)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!isLoading && laporanHistory.length === 0">
+        <div class="document-icon-wrapper">
+          <!-- Document SVG -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="document-svg">
+            <path d="M35,20 L58,20 L73,35 L73,80 L35,80 Z" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" />
+            <path d="M58,20 L58,35 L73,35 Z" fill="#cbd5e1" />
+            <line x1="43" y1="45" x2="52" y2="45" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="43" y1="54" x2="65" y2="54" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
+            <line x1="43" y1="63" x2="65" y2="63" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+        </div>
+        
+        <h3 class="empty-title">Permintaan bantuan Anda akan muncul di sini</h3>
+        <p class="empty-subtitle">Setelah Anda mengirimkan permintaan bantuan, kami mungkin butuh waktu untuk muncul di sini.</p>
+        
+        <button class="btn-reload" (click)="reloadData()">
+          Muat Ulang
+        </button>
+      </div>
+
+    </div>
+  </div>
+</ion-content>

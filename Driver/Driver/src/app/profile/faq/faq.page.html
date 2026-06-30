@@ -1,0 +1,46 @@
+<ion-content>
+  <!-- Blue Banner -->
+  <div class="faq-banner">
+    <div class="banner-header">
+      <button (click)="goBack()" class="back-btn-dark">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </button>
+      <h1 class="banner-header-title-dark">Pusat Bantuan</h1>
+    </div>
+
+    <div class="banner-body">
+      <div class="banner-left">
+        <h2 class="banner-title">FAQ &amp; Pusat Informasi</h2>
+        <p class="banner-sub">Jelajahi &amp; pelajari layanan kami</p>
+      </div>
+      <div class="banner-circle"></div>
+      <img src="assets/book-faq.png" alt="Icon FAQ" class="banner-book-img">
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+    <!-- FAQ Section -->
+    <h3 class="section-title">Sesuai aktivitas Anda</h3>
+
+    <div class="faq-accordion-container">
+      <div class="faq-item" *ngFor="let item of faqItems; let i = index" [class.open]="item.isOpen">
+        <!-- Question Header -->
+        <div class="faq-question-header" (click)="toggleFaq(i)">
+          <span class="faq-question-text">{{ item.question }}</span>
+          <ion-icon [name]="item.isOpen ? 'chevron-up-outline' : 'chevron-down-outline'" class="faq-arrow"></ion-icon>
+        </div>
+
+        <!-- Answer Panel -->
+        <div class="faq-answer-panel">
+          <div class="faq-answer-content">
+            <div [innerHTML]="item.answer"></div>
+            
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</ion-content>

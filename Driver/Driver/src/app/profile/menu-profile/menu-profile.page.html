@@ -1,0 +1,89 @@
+<ion-content [fullscreen]="true" class="profile-content">
+  <div class="header-background">
+    <div class="header-top">
+      <ion-button fill="clear" routerLink="/tabs/beranda" class="back-btn">
+        <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div class="profile-info">
+      <div class="avatar-container">
+        <img [src]="profileImage" alt="Profile" referrerpolicy="no-referrer">
+      </div>
+      <h2 class="profile-name">{{ user?.name || 'Driver Name' }}</h2>
+      <p class="profile-phone">{{ user?.phone || 'No phone' }}</p>
+      
+      <ion-button class="edit-profile-btn" shape="round" color="light" routerLink="/edit-profile">
+        Info Profile
+      </ion-button>
+    </div>
+
+    <!-- Wave di dalam header-background agar warna menyatu -->
+    <div class="wave-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 160" preserveAspectRatio="none">
+        <path fill="#E5E7EB" d="M0,160 L0,120 C400,200 800,20 1100,20 C1250,20 1350,80 1440,100 L1440,160 Z"></path>
+      </svg>
+    </div>
+  </div>
+
+  <div class="menu-list-container">
+    <ion-list class="menu-list" lines="none">
+      <ion-item button detail="true" (click)="goToKeamanan()">
+        <div class="icon-wrapper bg-blue-light" slot="start">
+          <ion-icon name="shield-checkmark" class="text-blue"></ion-icon>
+        </div>
+        <ion-label>Keamanan</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" (click)="goToKinerjaDriver()">
+        <div class="icon-wrapper bg-blue-light" slot="start">
+          <ion-icon name="star" class="text-blue"></ion-icon>
+        </div>
+        <ion-label>Kinerja Driver</ion-label>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" (click)="goToBahasa()">
+        <div class="icon-wrapper bg-blue-light" slot="start">
+          <ion-icon name="globe" class="text-blue"></ion-icon>
+        </div>
+        <ion-label>Bahasa</ion-label>
+        <span slot="end" class="language-text">Bahasa Indonesia</span>
+      </ion-item>
+      <div class="divider"></div>
+
+      <ion-item button detail="true" (click)="goToBantuan()">
+        <div class="icon-wrapper bg-blue-light" slot="start">
+          <ion-icon name="help-circle" class="text-blue"></ion-icon>
+        </div>
+        <ion-label>Bantuan</ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <div class="bottom-actions">
+    <ion-button expand="block" fill="outline" class="logout-btn" shape="round" (click)="confirmLogout()">
+      <ion-icon name="log-out-outline" slot="start"></ion-icon>
+      Keluar
+    </ion-button>
+  </div>
+
+  <!-- Custom Logout Modal Overlay -->
+  <div class="logout-modal-overlay" *ngIf="showLogoutConfirm">
+    <div class="logout-modal-backdrop" (click)="showLogoutConfirm = false"></div>
+    <div class="logout-modal-card">
+      <div class="logout-modal-icon-container">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </div>
+      <h2 class="logout-modal-title">Keluar dari Akun</h2>
+      <p class="logout-modal-message">
+        Yakin ingin keluar? Kamu harus masuk kembali untuk bisa menerima orderan dan melihat riwayat pendapatanmu
+      </p>
+      <div class="logout-modal-actions">
+        <button class="btn-cancel" (click)="showLogoutConfirm = false">Batal</button>
+        <button class="btn-confirm" (click)="logout()">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+</ion-content>

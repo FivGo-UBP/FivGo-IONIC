@@ -1,0 +1,132 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+/* ─── Global Font: Plus Jakarta Sans ───────────────────────────── */
+* {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+:root {
+  --ion-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ─── Center Header Titles globally ────────────────────────────── */
+ion-title {
+  position: absolute !important;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 64px !important;
+  pointer-events: none;
+  z-index: 0;
+}
+ion-buttons {
+  position: relative;
+  z-index: 10;
+}
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+// @import "@ionic/angular/css/palettes/dark.system.css";
+
+/* ─── Global Background Color ───────────────────────────────────── */
+ion-content {
+  --background: #E5E7EB;
+}
+
+/* ─── Global Rounded Headers (Custom Design) ───────────────────── */
+ion-header {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+
+  &::after {
+    display: none !important; /* Removes default iOS bottom border line shadow */
+  }
+
+  ion-toolbar {
+    border-radius: 0 0 45px 45px; /* Larger curved bottom corners */
+    overflow: hidden;
+    --border-style: none; /* Removes default border style in Ionic toolbar */
+    --min-height: 90px; /* Much taller toolbar for clear visibility */
+    --padding-top: 14px; /* More top padding for breathing room */
+    --padding-bottom: 14px; /* More bottom padding */
+    --background: linear-gradient(to bottom, #CFE8F4, #3B81D1) !important;
+    --color: #1a365d !important; /* High contrast dark blue */
+    color: #1a365d !important;
+  }
+
+  ion-title {
+    --color: #1a365d !important;
+    color: #1a365d !important;
+    font-weight: 700;
+  }
+
+  ion-back-button, ion-button {
+    --color: #1a365d !important;
+    color: #1a365d !important;
+  }
+}
+
+/* Override: Restore straight header for menu-profile page if needed */
+app-menu-profile ion-header {
+  background: transparent !important;
+
+  ion-toolbar {
+    border-radius: 0;
+    overflow: visible;
+    --min-height: 56px; /* Restore standard height */
+    --padding-top: 0px;
+    --padding-bottom: 0px;
+    --background: transparent !important;
+  }
+}
+
+/* Override: Flat & transparent header for help pages so header merges with banner */
+app-bantuan ion-header,
+app-faq ion-header,
+app-laporan-masalah ion-header {
+  ion-toolbar {
+    border-radius: 0 !important;
+    overflow: visible !important;
+    --background: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    --box-shadow: none !important;
+  }
+}

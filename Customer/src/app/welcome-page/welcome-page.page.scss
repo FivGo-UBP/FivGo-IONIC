@@ -144,7 +144,7 @@ swiper-slide {
   justify-content: space-between;
   height: 100%;
   width: 100%;
-  padding: 48px 24px 128px 24px;
+  padding: calc(44px + env(safe-area-inset-top)) 24px 128px 24px;
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
@@ -160,7 +160,7 @@ swiper-slide {
 /* Topbar: logo + skip button row */
 .slide-topbar {
   position: absolute;
-  top: 16px;
+  top: calc(12px + env(safe-area-inset-top));
   left: 20px;
   right: 20px;
   display: flex;
@@ -209,7 +209,7 @@ swiper-slide {
 /* Bottom navigation: dots + full Next button */
 .bottom-nav {
   position: absolute;
-  bottom: 32px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
   left: 24px;
   right: 24px;
   display: flex;
@@ -406,7 +406,7 @@ swiper-slide {
 }
 
 .modal-footer {
-  padding: 16px 24px 24px 24px;
+  padding: 16px 24px calc(24px + env(safe-area-inset-bottom)) 24px;
   border-top: 1px solid #e5e7eb;
   background: #ffffff;
 

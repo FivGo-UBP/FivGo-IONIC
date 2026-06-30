@@ -1,0 +1,54 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="bg-blue">
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="goBack()">
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Info Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bg-light-grey">
+  <div class="profile-edit-header">
+    <div class="avatar-wrapper">
+      <div class="avatar-container">
+        <!-- Menggunakan foto dari desain -->
+        <img [src]="profileImage" alt="Profile" referrerpolicy="no-referrer" />
+      </div>
+    </div>
+  </div>
+
+  <div class="form-container">
+    <div class="input-group">
+      <ion-label class="input-label">Nama Lengkap</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="person-outline" class="field-icon"></ion-icon>
+        <ion-input type="text" [value]="name" readonly placeholder="Nama Lengkap"></ion-input>
+      </div>
+    </div>
+
+    <!-- Email removed -->
+
+    <div class="input-group">
+      <div class="phone-label-row">
+        <ion-label class="input-label">Nomor Telepon</ion-label>
+        <span class="locked-badge">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+          Terkunci
+        </span>
+      </div>
+      <div class="input-wrapper phone-locked">
+        <ion-icon name="call-outline" class="field-icon"></ion-icon>
+        <ion-input type="tel" [value]="phone" readonly placeholder="Belum ada nomor"></ion-input>
+      </div>
+    </div>
+    <div class="input-group">
+      <ion-label class="input-label">Jenis Kelamin</ion-label>
+      <div class="input-wrapper">
+        <ion-icon name="male-female-outline" class="field-icon"></ion-icon>
+        <ion-input type="text" [value]="getTranslatedGender()" readonly></ion-input>
+      </div>
+    </div>
+  </div>
+</ion-content>

@@ -5,15 +5,24 @@ ion-content {
 .login-container {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   min-height: 100%;
-  padding: 16px 24px;
-  position: relative;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.inner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .top-bar {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: 50px;
+  position: absolute;
+  top: 50px;
+  left: 24px;
+  z-index: 100;
 
   .back-btn {
     --padding-start: 0;
@@ -27,24 +36,23 @@ ion-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 0;
+  margin-top: 10px;
+  margin-bottom: 20px;
   
   img {
     width: 100%;
-    max-width: 340px;
+    max-width: 320px;
     object-fit: contain;
   }
 }
 
 .bottom-content {
-  position: absolute;
-  top: 58%;
-  left: 24px;
-  right: 24px;
-  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   padding: 0 10px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 24px;
   
   .social-btn {
     --background: #ffffff;
